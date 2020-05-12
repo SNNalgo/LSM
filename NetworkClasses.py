@@ -9,8 +9,12 @@ from ObjectClasses import Neuron, Spike
 from ReservoirDefinitions import create_random_reservoir
 
 class LSMNetwork:
-    def __init__(self, dims, frac_inhibitory, w_matrix, fanout, simulation_steps, num_in_ch):
+    def __init__(self, dims, frac_inhibitory, w_matrix, fanout, simulation_steps, num_in_ch, tau=20, t_ref=10, propagation_time=10, ignore_frac=0.0):
         #simulation_steps : total number of simulation steps to simulate time T in steps of dt = T/dt
+        self.ignore_frac = ignore_frac
+        self.propagation_time = propagation_time
+        self.tau = tau
+        self.t_ref = t_ref
         self.dims = dims
         self.n_nodes = dims[0]*dims[1]*dims[2]
         self.num_in_ch = num_in_ch
@@ -26,7 +30,7 @@ class LSMNetwork:
         #self.adj_mat = adj_mat
         self.all_connections = all_connections
         self.all_weights = all_weights
-        self.neuronList = [Neuron(i, all_connections[i], all_weights[i], fanout) for i in range(len(all_connections))]
+        self.neuronList = [Neuron(i, all_connections[i], all_weights[i], fanout, tau, t_ref, propagation_time) for i in range(len(all_connections))]
         self.simulation_steps = simulation_steps
         self.current_time_step = 0
         self.action_buffer = []
@@ -37,7 +41,7 @@ class LSMNetwork:
     def add_input(self, input_spike_train):
         #input_spike_train : num_channels x simulation_steps matrix of all channels of the input spike train
         for i in range(len(self.neuronList)):
-            self.neuronList[i] = Neuron(i, self.all_connections[i], self.all_weights[i], self.fanout)
+            self.neuronList[i] = Neuron(i, self.all_connections[i], self.all_weights[i], self.fanout, self.tau, self.t_ref, self.propagation_time)
         for t_step in range(input_spike_train.shape[1]):
             self.action_buffer[t_step] = []
             for ch in range(self.num_in_ch):
@@ -47,7 +51,7 @@ class LSMNetwork:
     
     def simulate(self):
         rate_coding = np.zeros(self.n_nodes)
-        frac = 0.0
+        frac = self.ignore_frac
         for t_step in range(self.simulation_steps):
             #print(t_step)
             if len(self.action_buffer[t_step])>0:

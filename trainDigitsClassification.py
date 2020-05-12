@@ -21,9 +21,9 @@ steps = 1000
 ch = 64
 dims = (5,5,5)
 frac_inhibitory = 0.2
-w_mat = 5*np.array([[3, 6],[-2, -2]])
-fanout = 6
-reservoir_network = LSMNetwork(dims, frac_inhibitory, w_mat, fanout, steps, ch)
+w_mat = 4*np.array([[3, 6],[-2, -2]])
+fanout = 7
+reservoir_network = LSMNetwork(dims, frac_inhibitory, w_mat, fanout, steps, ch, ignore_frac=0.5)
 train_in_spikes = np.zeros((ch, steps))
 X = np.zeros((train_labels.shape[0],reservoir_network.n_nodes))
 for i in range(train_labels.shape[0]):

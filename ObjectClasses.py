@@ -15,11 +15,11 @@ class Spike:
 
 class Neuron:
     V_rest = 0
-    tau = 20
-    t_ref = 10
     V_th = 50
     
-    def __init__(self, sid, out_conn, out_weights, fanout, spike_propagation_time=None):
+    def __init__(self, sid, out_conn, out_weights, fanout, tau, t_ref, spike_propagation_base_time=None):
+        self.tau = tau
+        self.t_ref = t_ref
         self.sid = sid
         self.Vp = self.V_rest
         self.out_conn = out_conn
@@ -27,11 +27,11 @@ class Neuron:
         self.last_spike = -15
         self.last_receive_spike = 0
         self.out_weights = out_weights
-        if spike_propagation_time == None:
+        if spike_propagation_base_time == None:
             self.spike_propagation_time = [10 - np.random.randint(5) for i in range(fanout)] #time taken for spike to propaate 
         else:
-            self.spike_propagation_time = spike_propagation_time
-    
+            self.spike_propagation_time = [spike_propagation_base_time - np.random.randint(np.int32((spike_propagation_base_time/2))) for i in range(fanout)]
+
     def send_spike(self, time):
         send_times = [time + self.spike_propagation_time[i] for i in range(len(self.spike_propagation_time))]
         spike = Spike(self.out_weights, self.out_conn, send_times)
